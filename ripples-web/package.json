@@ -33,14 +33,15 @@
     "react-notifications": "^1.4.3",
     "react-redux": "^6.0.1",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "^2.1.8",
+    "react-scripts": "^3.0.0",
     "react-style-object-to-css": "^1.1.2",
     "reactstrap": "^7.1.0",
     "redux": "^4.0.1",
     "redux-starter-kit": "^0.4.3",
     "typescript": "^3.5.2",
     "wgs84-util": "^3.0.0",
-    "yarn": "^1.13.0"
+    "yarn": "^1.17.3",
+    "snyk": "^1.195.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -49,7 +50,9 @@
     "eject": "react-scripts eject",
     "test:debug": "react-scripts --inspect-brk test --runInBand --no-cache",
     "tslint-check": "tslint-config-prettier-check ./tslint.json",
-    "lint": "tslint -c tslint.json src/**/*.{ts,tsx} --fix --format verbose"
+    "lint": "tslint -c tslint.json src/**/*.{ts,tsx} --fix --format verbose",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -67,5 +70,6 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.0.1",
     "tslint-react": "^4.0.0"
-  }
+  },
+  "snyk": true
 }
