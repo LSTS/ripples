@@ -41,7 +41,7 @@
     "react-notifications": "^1.6.0",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "^4.0.0",
     "react-style-object-to-css": "^1.1.2",
     "reactstrap": "^8.5.1",
     "redux": "^4.0.5",
