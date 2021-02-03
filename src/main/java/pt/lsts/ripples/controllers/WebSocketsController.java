@@ -9,6 +9,7 @@ import pt.lsts.ripples.domain.assets.AssetParams;
 import pt.lsts.ripples.domain.shared.UserLocation;
 import pt.lsts.ripples.domain.logbook.MyAnnotation;
 import pt.lsts.ripples.domain.shared.AISShip;
+import pt.lsts.ripples.domain.shared.Mission;
 
 @Component
 public class WebSocketsController {
@@ -40,5 +41,9 @@ public class WebSocketsController {
 
 	public void sendAssetParamsUpdateFromServerToClients(AssetParams params) {
         this.template.convertAndSend("/topic/assets/params", params);
+    }
+
+    public void sendMissionUpdateFromServerToCLients(Mission mission){
+        this.template.convertAndSend("/topic/mission", mission);
     }
 }

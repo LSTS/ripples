@@ -7,6 +7,9 @@ spreadsheet-credentials.json
 rock7accounts.tsv
 src/main/resources/public/
 
+# dependencies
+/node_modules
+
 ### STS ###
 .apt_generated
 .classpath

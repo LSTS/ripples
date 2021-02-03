@@ -32,6 +32,7 @@ import {
   setSpots,
   setUser,
   setVehicles,
+  setMission,
   toggleSliderChange,
   toggleVehicleModal,
   updateAIS,
@@ -40,6 +41,7 @@ import {
   updateSpot,
   updateUserLocation,
   updateVehicle,
+  updateMission,
 } from '../../redux/ripples.actions'
 import AISService from '../../services/AISUtils'
 import GeoLayerService from '../../services/GeoLayerService'
@@ -53,6 +55,9 @@ import SidePanel from './components/SidePanel'
 import Slider from './components/Slider'
 import TopNav from './components/TopNav'
 import './styles/Ripples.css'
+import IMission from '../../model/IMission'
+import MissionService from '../../services/MissionUtils'
+import 'leaflet.markercluster/src'
 const { NotificationManager } = require('react-notifications')
 
 interface StateType {
@@ -75,6 +80,7 @@ interface PropsType {
   setAis: (_: IAisShip[]) => void
   setPlans: (_: IPlan[]) => void
   setSlider: (_: number) => void
+  setMission: (_: IMission[]) => void
   editPlan: (_: IPlan) => void
   addNewPlan: (_: IPlan) => void
   setProfiles: (profiles: IProfile[]) => any
@@ -87,6 +93,7 @@ interface PropsType {
   updateCCU: (ccu: IAsset) => void
   updateSpot: (spot: IAsset) => void
   updatePlan: (p: IPlan) => void
+  updateMission: (m: IMission) => void
   addAnnotation: (a: IAnnotation) => void
   setAnnotations: (a: IAnnotation[]) => void
   updateUserLocation: (u: IUserLocation) => void
@@ -105,6 +112,7 @@ class Ripples extends Component<PropsType, StateType> {
   private geoLayerService: GeoLayerService = new GeoLayerService()
   private soiService: SoiService = new SoiService()
   private logbookService: LogbookService = new LogbookService()
+  private missionService: MissionService = new MissionService()
 
   constructor(props: any) {
     super(props)
@@ -123,12 +131,14 @@ class Ripples extends Component<PropsType, StateType> {
     this.startUpdates = this.startUpdates.bind(this)
     this.updateSoiData = this.updateSoiData.bind(this)
     this.updateAISData = this.updateAISData.bind(this)
+    this.updateMissionData = this.updateMissionData.bind(this)
     this.loadCurrentlyLoggedInUser = this.loadCurrentlyLoggedInUser.bind(this)
     this.handleWsAssetUpdate = this.handleWsAssetUpdate.bind(this)
     this.handleWsAISUpdate = this.handleWsAISUpdate.bind(this)
     this.handleWsAnnotationUpdate = this.handleWsAnnotationUpdate.bind(this)
     this.handleWsUserLocation = this.handleWsUserLocation.bind(this)
     this.handleWsVehicleParams = this.handleWsVehicleParams.bind(this)
+    this.handleWsMissionUpdate = this.handleWsMissionUpdate.bind(this)
     this.onSettingsClick = this.onSettingsClick.bind(this)
   }
 
@@ -155,10 +165,12 @@ class Ripples extends Component<PropsType, StateType> {
       this.handleWsAISUpdate,
       this.handleWsAnnotationUpdate,
       this.handleWsUserLocation,
-      this.handleWsVehicleParams
+      this.handleWsVehicleParams,
+      this.handleWsMissionUpdate
     )
     this.setState({ myMaps })
     this.setState({ loading: false })
+    this.updateMissionData()
     this.startUpdates()
   }
 
@@ -218,6 +230,17 @@ class Ripples extends Component<PropsType, StateType> {
     }
   }
 
+  public handleWsMissionUpdate(m: Message) {
+    if (m.body) {
+      const missionPayload: IMission = JSON.parse(m.body)
+      console.log('--- MISSION ADDED ---')
+      console.log(missionPayload)
+
+      // update redux
+      this.props.updateMission(missionPayload)
+    }
+  }
+
   public stopUpdates() {
     clearInterval(this.soiTimer)
     clearInterval(this.aisTimer)
@@ -227,6 +250,7 @@ class Ripples extends Component<PropsType, StateType> {
   public startUpdates() {
     this.updateSoiData()
     this.updateAISData()
+    // this.updateMissionData()
     if (!this.soiTimer) {
       this.soiTimer = window.setInterval(this.updateSoiData, 60000)
     }
@@ -322,6 +346,13 @@ class Ripples extends Component<PropsType, StateType> {
     const shipsData: IAisShip[] = await this.aisService.fetchAisData()
     // update redux store
     this.props.setAis(shipsData)
+  }
+
+  public async updateMissionData() {
+    const missionsData: IMission[] = await this.missionService.fetchMissionData()
+    // console.log(missionsData)
+    // update redux store
+    this.props.setMission(missionsData)
   }
 
   public handleEditPlan = (p: IPlan) => {
@@ -460,11 +491,13 @@ const actionCreators = {
   setSpots,
   setUser,
   setVehicles,
+  setMission,
   updateVehicle,
   updateSpot,
   updateCCU,
   updatePlan,
   updateAIS,
+  updateMission,
   updateUserLocation,
   toggleSliderChange,
   toggleVehicleModal,
