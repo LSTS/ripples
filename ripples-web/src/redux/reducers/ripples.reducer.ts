@@ -7,6 +7,7 @@ import { DefaultOverlayInfo } from '../../model/IOverlayInfo'
 import IPlan, { EmptyPlan, isPlanEqual } from '../../model/IPlan'
 import IRipplesState, { defaultAssetsGroup } from '../../model/IRipplesState'
 import { ToolSelected } from '../../model/ToolSelected'
+import IMission from '../../model/IMission'
 import PositionService from '../../services/PositionUtils'
 import {
   addAnnotation,
@@ -45,6 +46,7 @@ import {
   setVehicles,
   setWeatherParam,
   setEditingPlan,
+  setMission,
   toggleGps,
   togglePlanVisibility,
   toggleSliderChange,
@@ -60,6 +62,7 @@ import {
   updateWp,
   updateWpLocation,
   updateWpTimestamp,
+  updateMission,
 } from '../ripples.actions'
 
 const positionService: PositionService = new PositionService()
@@ -93,6 +96,8 @@ const startState: IRipplesState = {
   geoLayers: null,
   isEditingPlan: false,
   updatingPlanId: false,
+
+  missions: [],
 }
 
 const ripplesReducer = createReducer(startState, {
@@ -111,6 +116,9 @@ const ripplesReducer = createReducer(startState, {
   },
   [setAis.type]: (state, action) => {
     state.assets.aisShips = action.payload
+  },
+  [setMission.type]: (state, action) => {
+    state.missions = action.payload
   },
   [setCcus.type]: (state, action) => {
     state.assets.ccus = action.payload
@@ -326,6 +334,13 @@ const ripplesReducer = createReducer(startState, {
       oldAIS.location = newAIS.location
     } else {
       state.assets.aisShips.push(newAIS)
+    }
+  },
+  [updateMission.type]: (state, action) => {
+    const newMission: IMission = action.payload
+    const missionExists = state.missions.find((m) => m.path === newMission.path)
+    if (typeof missionExists !== 'undefined' || missionExists !== null) {
+      state.missions.push(newMission)
     }
   },
   [addMeasurePoint.type]: (state, action) => {

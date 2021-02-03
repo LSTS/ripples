@@ -12,6 +12,8 @@ import {
   WMSTileLayer,
 } from 'react-leaflet'
 import 'react-leaflet-fullscreen-control'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 import { connect } from 'react-redux'
 import { Button, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap'
 import IAisShip, { IShipLocation } from '../../../model/IAisShip'
@@ -59,6 +61,22 @@ import Vehicle from './Vehicle'
 import VerticalProfile from './VerticalProfile'
 import WeatherLinePlot from './WeatherLinePlot'
 import PlanManager from './PlanManager'
+import IMission from '../../../model/IMission'
+import Mission from './Mission'
+import MissionService from '../../../services/MissionUtils'
+
+import L from 'leaflet'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
+// import "leaflet.markercluster/dist/leaflet.markercluster";
+// import "leaflet.markercluster/dist/MarkerCluster.css"
+// import "leaflet.markercluster/dist/MarkerCluster.Default.css"
+
+// import MarkerClusterGroup from "react-leaflet-markercluster"
+// import 'react-leaflet-markercluster/dist/styles.min.css'
+
+// const L2 = require('leaflet.markercluster')
 
 const { NotificationManager } = require('react-notifications')
 
@@ -90,6 +108,9 @@ interface PropsType {
   hasSliderChanged: boolean
   weatherParam: WeatherParam | null
   toolClickLocation: ILatLng | null
+
+  missions: IMission[]
+
   setSelectedWaypointIdx: (_: number) => void
   updateWpLocation: (_: ILatLng) => void
   addWpToPlan: (_: IPositionAtTime) => void
@@ -117,6 +138,13 @@ interface StateType {
   activeLegend: JSX.Element
   newAnnotationContent: string
   clickLocationWeather: IWeather[]
+
+  isMissionLayerActive: boolean
+  missionLocation: string
+  missionVehicle: string
+  missionStartDate: number
+  missionEndDate: number
+  missionsOpen: IMission[]
 }
 
 class RipplesMap extends Component<PropsType, StateType> {
@@ -133,6 +161,7 @@ class RipplesMap extends Component<PropsType, StateType> {
   private vehicleChangedSettings: Map<string, string> = new Map()
   private lastWaveMapTime: string = MapUtils.resetMapTime(3)
   private lastWindMapTime: string = MapUtils.resetMapTime(6)
+  private missionService: MissionService = new MissionService()
 
   constructor(props: PropsType) {
     super(props)
@@ -151,6 +180,14 @@ class RipplesMap extends Component<PropsType, StateType> {
       activeLegend: <></>,
       newAnnotationContent: '',
       clickLocationWeather: [],
+
+      isMissionLayerActive: false,
+      missionLocation: '',
+      missionVehicle: '',
+      missionStartDate: Date.now() - 31556952000,
+      missionEndDate: Date.now(),
+
+      missionsOpen: [],
     }
     this.handleMapClick = this.handleMapClick.bind(this)
     this.handleZoom = this.handleZoom.bind(this)
@@ -160,6 +197,14 @@ class RipplesMap extends Component<PropsType, StateType> {
     this.onMapAnnotationClick = this.onMapAnnotationClick.bind(this)
     this.onLocationClick = this.onLocationClick.bind(this)
     this.onEditVehicle = this.onEditVehicle.bind(this)
+
+    this.buildMissionDialog = this.buildMissionDialog.bind(this)
+    this.changeMissionLocation = this.changeMissionLocation.bind(this)
+    this.changeMissionVehicle = this.changeMissionVehicle.bind(this)
+    this.changeMissionStartDate = this.changeMissionStartDate.bind(this)
+    this.changeMissionEndDate = this.changeMissionEndDate.bind(this)
+    this.missionMarkerToImage = this.missionMarkerToImage.bind(this)
+    this.missionImageToMarker = this.missionImageToMarker.bind(this)
 
     if (this.props.auth.authenticated) {
       this.fetchMapSettings()
@@ -214,6 +259,11 @@ class RipplesMap extends Component<PropsType, StateType> {
       default:
         this.props.setSidePanelVisibility(false)
         break
+    }
+
+    // close missions image
+    if (e.originalEvent.path[0].alt !== undefined) {
+      this.missionImageToMarker(e.originalEvent.path[0].alt)
     }
   }
 
@@ -314,6 +364,240 @@ class RipplesMap extends Component<PropsType, StateType> {
         />
       )
     })
+  }
+
+  public buildMissions() {
+    let missions = this.props.missions
+    // console.log(missions)
+
+    if (this.map) {
+      // filter by map bounds
+      missions = missions.filter((mission) =>
+        this.missionService.isMissionInMapBounds(mission, this.map.leafletElement.getBounds())
+      )
+
+      // filter by location
+      if (this.state.missionLocation !== '') {
+        missions = missions.filter((mission) => mission.location === this.state.missionLocation)
+      }
+
+      // filter by end date
+      missions = missions.filter((mission) =>
+        this.missionService.isMissionBetweenDate(mission, this.state.missionStartDate, this.state.missionEndDate)
+      )
+
+      // filter by vehicle
+      if (this.state.missionVehicle !== '') {
+        missions = missions.filter((mission) => mission.vehicle === this.state.missionVehicle)
+      }
+
+      console.log(missions)
+    }
+
+    /* 
+return (
+  <MarkerClusterGroup>
+    {missions.map((mission, index) => {
+      const SW = new L.LatLng(mission.boundingBox.minY, mission.boundingBox.minX)
+      const NE = new L.LatLng(mission.boundingBox.maxY, mission.boundingBox.maxX)
+      const imgBounds = L.latLngBounds(SW, NE)
+      const center = imgBounds.getCenter()
+      return (
+        <Marker
+          alt={'missionMarker_' + mission.path}
+          position={[center.lat, center.lng]}
+          icon={new PCIcon()}
+          onClick={this.missionMarkerToImage} />
+      )
+    })}
+  </MarkerClusterGroup>
+)
+*/
+
+    if (this.map) {
+      // console.log('Insert Cluster');
+      // var leaflet = L
+      // console.log(leaflet)
+      // var mcg = L.markerClusterGroup();
+      // var mcg = new L2.MarkerClusterGroup();
+      /*
+      var marker1 = L.marker(new L.LatLng(49.8397, 24.0297), { title: 'title' });
+      var marker2 = L.marker(new L.LatLng(52.2297, 21.0122), { title: 'title2' });
+      mcg.addLayer(marker1)
+      mcg.addLayer(marker2)
+
+      this.map.leafletElement.addLayer(mcg);
+      
+      */
+      // ---MarkerClusterGroup
+      /*
+      return (
+        <MarkerClusterGroup>
+          <Marker position={[49.8397, 24.0297]} />
+          <Marker position={[52.2297, 21.0122]} />
+          <Marker position={[51.5074, -0.0901]} />
+        </MarkerClusterGroup>
+      )
+      */
+      // require
+      /*
+      var mcg = new leaf_cluster.MarkerClusterGroup();
+      mcg.clearLayers();
+      
+      mcg.addLayer(L.marker([41.974867, -8.877958]));
+      mcg.addLayer(L.marker([41.973331, -8.878669]));
+
+      console.log(mcg)
+      this.map.leafletElement.addLayer(mcg);
+      */
+    }
+
+    return missions.map((m, index) => {
+      if (this.state.missionsOpen.indexOf(m) === -1) {
+        return (
+          <Mission
+            key={'missionMarker_' + index}
+            data={m}
+            icon={new PCIcon()}
+            handleDisplayImage={this.missionMarkerToImage}
+            displayMarker={true}
+          />
+        )
+      } else {
+        return <Mission key={'missionImage_' + index} data={m} displayMarker={false} />
+      }
+    })
+  }
+
+  public changeMissionLocation(event: any) {
+    this.setState({ missionLocation: event.target.value })
+  }
+
+  public changeMissionVehicle(event: any) {
+    this.setState({ missionVehicle: event.target.value })
+  }
+
+  public changeMissionStartDate(date: number) {
+    this.setState({ missionStartDate: date })
+  }
+
+  public changeMissionEndDate(date: number) {
+    this.setState({ missionEndDate: date })
+  }
+
+  public missionMarkerToImage(mission: IMission) {
+    if (this.state.missionsOpen.indexOf(mission) === -1) {
+      this.setState({
+        missionsOpen: [...this.state.missionsOpen, mission],
+      })
+    }
+  }
+
+  public missionImageToMarker(missionSrc: string) {
+    missionSrc = missionSrc.replace('missionImage_', '')
+    this.setState({ missionsOpen: this.state.missionsOpen.filter((mission) => mission.path !== missionSrc) })
+  }
+
+  public buildMissionDialog() {
+    if (this.state.isMissionLayerActive) {
+      const uniqueLocations: string[] = []
+      this.props.missions.forEach((m) => {
+        if (uniqueLocations.indexOf(m.location) === -1) {
+          uniqueLocations.push(m.location)
+        }
+      })
+
+      const uniqueVehicles: string[] = []
+      this.props.missions.forEach((m) => {
+        if (uniqueVehicles.indexOf(m.vehicle) === -1) {
+          uniqueVehicles.push(m.vehicle)
+        }
+      })
+
+      return (
+        <div className="missionDialog">
+          <form className="missiontForm">
+            <label>
+              Location
+              <select
+                className="locationPicker"
+                value={this.state.missionLocation}
+                onChange={(locSelected: any) => {
+                  this.changeMissionLocation(locSelected)
+                }}
+              >
+                <option value="" />
+                {uniqueLocations.map((loc, index) => {
+                  return (
+                    <option key={index} value={loc}>
+                      {' '}
+                      {loc}{' '}
+                    </option>
+                  )
+                })}
+              </select>
+            </label>
+
+            <label>
+              Vehicle
+              <select
+                className="vehiclePicker"
+                value={this.state.missionVehicle}
+                onChange={(vehSelected: any) => {
+                  this.changeMissionVehicle(vehSelected)
+                }}
+              >
+                <option value="" />
+                {uniqueVehicles.map((veh, index) => {
+                  return (
+                    <option key={index} value={veh}>
+                      {' '}
+                      {veh}{' '}
+                    </option>
+                  )
+                })}
+              </select>
+            </label>
+
+            <div className="inputDates">
+              <label className="labelStartDate">
+                Start date:
+                <DatePicker
+                  selected={new Date(this.state.missionStartDate)}
+                  onChange={(newDate: any) => {
+                    const startDate = new Date(newDate).getTime()
+                    this.changeMissionStartDate(startDate)
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="form-control form-control-sm"
+                  onInputClick={() => this.map.leafletElement.doubleClickZoom.disable()}
+                  onClickOutside={() => this.map.leafletElement.doubleClickZoom.enable()}
+                />
+              </label>
+
+              <label className="labelEndDate">
+                End date:
+                <DatePicker
+                  selected={new Date(this.state.missionEndDate)}
+                  onChange={(newDate: any) => {
+                    const endDate = new Date(newDate).getTime()
+                    if (endDate < Date.now()) {
+                      this.changeMissionEndDate(endDate)
+                    } else {
+                      alert('Invalid end date')
+                    }
+                  }}
+                  dateFormat="dd/MM/yyyy"
+                  className="form-control form-control-sm"
+                  onInputClick={() => this.map.leafletElement.doubleClickZoom.disable()}
+                  onClickOutside={() => this.map.leafletElement.doubleClickZoom.enable()}
+                />
+              </label>
+            </div>
+          </form>
+        </div>
+      )
+    }
   }
 
   public buildAisShips() {
@@ -418,6 +702,8 @@ class RipplesMap extends Component<PropsType, StateType> {
                 activeLegend: <img className="mapLegend" src={url} alt="Map legend" />,
               })
               return
+            } else if (evt.name === 'Missions') {
+              this.setState({ isMissionLayerActive: true })
             }
           }}
           onOverlayRemove={(evt: any) => {
@@ -430,6 +716,8 @@ class RipplesMap extends Component<PropsType, StateType> {
                 activeLegend: <></>,
               })
               this.props.setMapOverlayInfo('')
+            } else if (evt.name === 'Missions') {
+              this.setState({ isMissionLayerActive: false })
             }
           }}
         >
@@ -474,13 +762,24 @@ class RipplesMap extends Component<PropsType, StateType> {
                 attribution="GEBCO (multiple sources)"
               />
             </BaseLayer>
+
+            <Overlay name="EMODNET Bathymetry (Numeric)">
+              <WMSTileLayer
+                url="https://ows.emodnet-bathymetry.eu/wms"
+                layers="contours"
+                format="image/png"
+                transparent={true}
+                attribution="EMODNET"
+              />
+            </Overlay>
+
             <Overlay name="EMODNET Bathymetry">
               <WMSTileLayer
                 url="https://ows.emodnet-bathymetry.eu/wms"
                 layers="mean_multicolour"
                 format="image/png"
                 // styles="boxfill/sst_36"
-                // transparent={true}
+                transparent={true}
                 // colorscalerange="0,36"
                 belowmincolor="extend"
                 belowmaxcolor="extend"
@@ -648,6 +947,10 @@ class RipplesMap extends Component<PropsType, StateType> {
             </Overlay>
             <Overlay checked={true} name="Annotations">
               <LayerGroup>{this.buildAnnotations()}</LayerGroup>
+            </Overlay>
+            <Overlay checked={this.state.isMissionLayerActive} name="Missions">
+              <LayerGroup>{this.buildMissions()}</LayerGroup>
+              {this.buildMissionDialog()}
             </Overlay>
           </LayersControl>
           {this.buildNewAnnotationMarker()}
@@ -953,6 +1256,8 @@ function mapStateToProps(state: IRipplesState) {
     weatherParam: state.weatherParam,
     toolClickLocation: state.toolClickLocation,
     geoLayers: state.geoLayers,
+
+    missions: state.missions,
   }
 }
 
