@@ -6,6 +6,7 @@ application_sv.yml
 spreadsheet-credentials.json
 rock7accounts.tsv
 src/main/resources/public/
+log/
 
 # dependencies
 /node_modules

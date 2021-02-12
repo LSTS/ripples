@@ -63,8 +63,6 @@ dependencies {
 	
 	compile files('libs/libimc.jar','libs/ais-contact-manager-1.0.jar')
 
-	implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-
 	implementation 'dk.tbsalling:aisutils:1.0.0'
 	implementation 'dk.tbsalling:aismessages:2.2.3'
 
@@ -85,8 +83,8 @@ dependencies {
 }
 
 configurations {
-	all*.exclude module : 'logback-classic'
-    all*.exclude module : 'spring-boot-starter-logging'
+	all*.exclude module : 'log4j2'
+    all*.exclude module : 'slf4j-log4j12'
 }
 
 

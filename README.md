@@ -1,9 +1,8 @@
 # Ripples
 
 ## How to run ripples server locally:
-1. Install [gradle](https://gradle.org/install/)
-2. Get the files application.yml and spreadsheet-credentials.json and put them under src/main/resources
-3. Run: gradle bootRun
+1. Install JDK 8+
+2. Run: ./gradlew build bootRun
 
 ## How to run ripples web client locally:
 1. Install [yarn](https://yarnpkg.com/lang/en/docs/install)
