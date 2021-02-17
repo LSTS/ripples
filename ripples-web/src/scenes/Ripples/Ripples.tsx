@@ -57,7 +57,6 @@ import TopNav from './components/TopNav'
 import './styles/Ripples.css'
 import IMission from '../../model/IMission'
 import MissionService from '../../services/MissionUtils'
-import 'leaflet.markercluster/src'
 const { NotificationManager } = require('react-notifications')
 
 interface StateType {

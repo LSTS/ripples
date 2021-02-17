@@ -1,10 +1,3 @@
-import * as L from 'leaflet'
-// import MarkerClusterGroup from "react-leaflet-markercluster"
-// import 'react-leaflet-markercluster/dist/styles.min.css'
-import 'leaflet.markercluster'
-import 'leaflet.markercluster/dist/MarkerCluster.css'
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-
 import React, { Component } from 'react'
 import {
   Circle,
@@ -388,109 +381,23 @@ class RipplesMap extends Component<PropsType, StateType> {
       // console.log(missions)
     }
 
-    /* 
-return (
-  <MarkerClusterGroup>
-    {missions.map((mission, index) => {
-      const SW = new L.LatLng(mission.boundingBox.minY, mission.boundingBox.minX)
-      const NE = new L.LatLng(mission.boundingBox.maxY, mission.boundingBox.maxX)
-      const imgBounds = L.latLngBounds(SW, NE)
-      const center = imgBounds.getCenter()
-      return (
-        <Marker
-          alt={'missionMarker_' + mission.path}
-          position={[center.lat, center.lng]}
-          icon={new PCIcon()}
-          onClick={this.missionMarkerToImage} />
-      )properties
-    })}
-  </MarkerClusterGroup>
-)
-*/
-
     if (this.map) {
-      /*
-       var mcg = L.markerClusterGroup();
-       mcg.clearLayers();
- 
-       var marker1 = L.marker(new L.LatLng(49.8397, 24.0297), { title: 'title' });
-       var marker2 = L.marker(new L.LatLng(52.2297, 21.0122), { title: 'title2' });
-       var marker3 = L.marker(new L.LatLng(51.5074, -0.0901), { title: 'title3' });
-       //marker1.addTo(mcg)
-       //marker2.addTo(mcg)
-       //marker3.addTo(mcg)
- 
-       mcg.addLayer(marker1);
-       mcg.addLayer(marker2);
-       mcg.addLayer(marker3)
-       this.map.leafletElement.addLayer(mcg)
- */
-      /*
-      const missionMarkers: { id: number, position: { lat: number; lng: number; }; text: string; }[] = []
-      missions.forEach((m, index) => {
-        const SW = new L.LatLng(m.boundingBox.minY, m.boundingBox.minX)
-        const NE = new L.LatLng(m.boundingBox.maxY, m.boundingBox.maxX)
-        const imgBounds = L.latLngBounds(SW, NE)
-        const center = imgBounds.getCenter()
-
-        let pos = { "lat": center.lat, lng: center.lng }
-        let marker = {
-          "id": index,
-          "position": pos,
-          "text": m.mission
+      return missions.map((m, index) => {
+        if (this.state.missionsOpen.indexOf(m) === -1) {
+          return (
+            <Mission
+              key={'missionMarker_' + index}
+              data={m}
+              icon={new PCIcon()}
+              handleDisplayImage={this.missionMarkerToImage}
+              displayMarker={true}
+            />
+          )
+        } else {
+          return <Mission key={'missionImage_' + index} data={m} displayMarker={false} />
         }
-        missionMarkers.push(marker)
       })
-      console.log(missionMarkers)
-*/
-      /*
-      return (
-        <MarkerCluster markers={missionMarkers} icon={new PCIcon} onClick={() => {console.log('teste')}} map={this.map.leafletElement}/>
-      )
-      */
-      // console.log('Insert Cluster');
-      // var leaflet = L
-      // console.log(leaflet)
-      // var mcg = L.markerClusterGroup();
-      // var mcg = new L2.MarkerClusterGroup();
-      /*
-      var marker1 = L.marker(new L.LatLng(49.8397, 24.0297), { title: 'title' });
-      var marker2 = L.marker(new L.LatLng(52.2297, 21.0122), { title: 'title2' });
-      mcg.addLayer(marker1)
-      mcg.addLayer(marker2)
-
-      this.map.leafletElement.addLayer(mcg);
-      
-      */
-      // --MarkerClusterGroup
-      /*
-       return (
-         <>
-         <MarkerClusterGroup>
-           <Marker position={[49.8397, 24.0297]} />
-           <Marker position={[52.2297, 21.0122]} />
-           <Marker position={[51.5074, -0.0901]} />
-         </MarkerClusterGroup>
-        </>
-       )
-     */
     }
-
-    return missions.map((m, index) => {
-      if (this.state.missionsOpen.indexOf(m) === -1) {
-        return (
-          <Mission
-            key={'missionMarker_' + index}
-            data={m}
-            icon={new PCIcon()}
-            handleDisplayImage={this.missionMarkerToImage}
-            displayMarker={true}
-          />
-        )
-      } else {
-        return <Mission key={'missionImage_' + index} data={m} displayMarker={false} />
-      }
-    })
   }
 
   public changeMissionLocation(event: any) {
