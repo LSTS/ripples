@@ -355,7 +355,6 @@ class RipplesMap extends Component<PropsType, StateType> {
 
   public buildMissions() {
     let missions = this.props.missions
-    // console.log(missions)
 
     if (this.map) {
       // filter by map bounds
@@ -377,26 +376,33 @@ class RipplesMap extends Component<PropsType, StateType> {
       if (this.state.missionVehicle !== '') {
         missions = missions.filter((mission) => mission.vehicle === this.state.missionVehicle)
       }
-
       // console.log(missions)
     }
 
     if (this.map) {
-      return missions.map((m, index) => {
-        if (this.state.missionsOpen.indexOf(m) === -1) {
-          return (
-            <Mission
-              key={'missionMarker_' + index}
-              data={m}
-              icon={new PCIcon()}
-              handleDisplayImage={this.missionMarkerToImage}
-              displayMarker={true}
-            />
-          )
-        } else {
-          return <Mission key={'missionImage_' + index} data={m} displayMarker={false} />
+      const listMarkers: IMission[] = []
+      missions.forEach((m1, index) => {
+        if (this.state.missionsOpen.indexOf(m1) === -1) {
+          listMarkers.push(m1)
         }
       })
+
+      if (this.state.isMissionLayerActive) {
+        return (
+          <>
+            <Mission
+              markers={listMarkers}
+              icon={new PCIcon()}
+              map={this.map.leafletElement}
+              handleDisplayImage={this.missionMarkerToImage}
+              missionsOpen={this.state.missionsOpen}
+            />
+          </>
+        )
+      } else {
+        this.cleanMissionLayer()
+        return <></>
+      }
     }
   }
 
@@ -425,8 +431,33 @@ class RipplesMap extends Component<PropsType, StateType> {
   }
 
   public missionImageToMarker(missionSrc: string) {
-    missionSrc = missionSrc.replace('missionImage_', '')
-    this.setState({ missionsOpen: this.state.missionsOpen.filter((mission) => mission.path !== missionSrc) })
+    // remove mission image
+    this.map.leafletElement.eachLayer((layer: any) => {
+      if (layer.options.alt === missionSrc) {
+        this.map.leafletElement.removeLayer(layer)
+      }
+    })
+    const missionToReplace = missionSrc.replace('missionImage_', '')
+    this.setState({ missionsOpen: this.state.missionsOpen.filter((mission) => mission.path !== missionToReplace) })
+  }
+
+  public cleanMissionLayer() {
+    this.state.missionsOpen.forEach((mission) => {
+      const missionSrc = 'missionImage_' + mission.path
+      this.map.leafletElement.eachLayer((layer: any) => {
+        // remove mission image
+        if (layer.options.alt === missionSrc) {
+          this.map.leafletElement.removeLayer(layer)
+        }
+      })
+    })
+
+    this.map.leafletElement.eachLayer((layer: any) => {
+      // remove mission cluster
+      if (layer._featureGroup) {
+        this.map.leafletElement.removeLayer(layer)
+      }
+    })
   }
 
   public buildMissionDialog() {
