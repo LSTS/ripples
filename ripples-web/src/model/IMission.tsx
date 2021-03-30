@@ -5,6 +5,7 @@ export default interface IMission {
   plan: string
   vehicle: string
   path: string
+  type: string
   boundingBox: {
     minX: number
     minY: number

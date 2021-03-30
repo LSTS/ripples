@@ -129,6 +129,7 @@ interface StateType {
   isMissionLayerActive: boolean
   missionLocation: string
   missionVehicle: string
+  missionType: string
   missionStartDate: number
   missionEndDate: number
   missionsOpen: IMission[]
@@ -171,6 +172,7 @@ class RipplesMap extends Component<PropsType, StateType> {
       isMissionLayerActive: false,
       missionLocation: '',
       missionVehicle: '',
+      missionType: 'sidescan',
       missionStartDate: Date.now() - 31556952000,
       missionEndDate: Date.now(),
 
@@ -188,6 +190,7 @@ class RipplesMap extends Component<PropsType, StateType> {
     this.buildMissionDialog = this.buildMissionDialog.bind(this)
     this.changeMissionLocation = this.changeMissionLocation.bind(this)
     this.changeMissionVehicle = this.changeMissionVehicle.bind(this)
+    this.changeMissionType = this.changeMissionType.bind(this)
     this.changeMissionStartDate = this.changeMissionStartDate.bind(this)
     this.changeMissionEndDate = this.changeMissionEndDate.bind(this)
     this.missionMarkerToImage = this.missionMarkerToImage.bind(this)
@@ -376,6 +379,12 @@ class RipplesMap extends Component<PropsType, StateType> {
       if (this.state.missionVehicle !== '') {
         missions = missions.filter((mission) => mission.vehicle === this.state.missionVehicle)
       }
+
+      // filter by type
+      if (this.state.missionType !== '') {
+        missions = missions.filter((mission) => mission.type.includes(this.state.missionType))
+      }
+
       // console.log(missions)
     }
 
@@ -396,6 +405,7 @@ class RipplesMap extends Component<PropsType, StateType> {
               map={this.map.leafletElement}
               handleDisplayImage={this.missionMarkerToImage}
               missionsOpen={this.state.missionsOpen}
+              missionTypeSelected={this.state.missionType}
             />
           </>
         )
@@ -412,6 +422,10 @@ class RipplesMap extends Component<PropsType, StateType> {
 
   public changeMissionVehicle(event: any) {
     this.setState({ missionVehicle: event.target.value })
+  }
+
+  public changeMissionType(event: any) {
+    this.setState({ missionType: event.target.value })
   }
 
   public changeMissionStartDate(date: number) {
@@ -518,6 +532,20 @@ class RipplesMap extends Component<PropsType, StateType> {
                     </option>
                   )
                 })}
+              </select>
+            </label>
+
+            <label>
+              Type
+              <select
+                className="typePicker"
+                value={this.state.missionType}
+                onChange={(typeSelected: any) => {
+                  this.changeMissionType(typeSelected)
+                }}
+              >
+                <option value={'sidescan'}>{' Sidescan '}</option>
+                <option value={'mb_bath2'}>{' Bathymetry '}</option>
               </select>
             </label>
 

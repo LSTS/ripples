@@ -10,6 +10,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 interface PropsType {
   markers: IMission[]
   missionsOpen: IMission[]
+  missionTypeSelected: string
   map: L.Map
   icon: L.Icon
   setSidePanelTitle: (title: string) => void
@@ -36,11 +37,14 @@ class Mission extends Component<PropsType, StateType> {
         const NE = new L.LatLng(mission.boundingBox.maxY, mission.boundingBox.maxX)
         const imgBounds = L.latLngBounds(SW, NE)
 
-        const name = 'missionImage_' + mission.path
-        const urlImage = process.env.REACT_APP_MISSION_REPOSITORY_API + mission.path
+        if (mission.type.includes(this.props.missionTypeSelected)) {
+          const urlImage =
+            process.env.REACT_APP_MISSION_REPOSITORY_API + mission.path + '/' + this.props.missionTypeSelected
+          const name = 'missionImage_' + mission.path
 
-        if (this.props.map) {
-          L.imageOverlay(urlImage, imgBounds, { alt: name, interactive: true }).addTo(this.props.map)
+          if (this.props.map) {
+            L.imageOverlay(urlImage, imgBounds, { alt: name, interactive: true }).addTo(this.props.map)
+          }
         }
       })
     }

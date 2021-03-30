@@ -59,6 +59,7 @@ public class MissionsFetcher {
                 String plan = (String) jsonObject.get("plan");
                 String vehicle = (String) jsonObject.get("vehicle");
                 String path = (String) jsonObject.get("srcPath");
+                String type = (String) jsonObject.get("type");
                 JSONObject boundingBox = (JSONObject) jsonObject.get("boundingBox");
                 
                 /*
@@ -79,7 +80,7 @@ public class MissionsFetcher {
 
                 Optional<Mission> optMission = repo.findById((String) jsonObject.get("srcPath"));
                 if(!optMission.isPresent()){
-                    Mission newMission = new Mission(mission, date, loc, plan, vehicle, path);
+                    Mission newMission = new Mission(mission, date, loc, plan, vehicle, path, type);
                     newMission.setBoundingBox(boundingBox);
                     repo.save(newMission);
                     wsController.sendMissionUpdateFromServerToCLients(newMission);

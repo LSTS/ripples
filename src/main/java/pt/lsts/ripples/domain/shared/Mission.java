@@ -23,6 +23,7 @@ public class Mission {
     private String location;
     private String plan;
     private String vehicle;
+    private String type;
     //private JSONObject boundingBox;
 
     @ElementCollection
@@ -32,13 +33,14 @@ public class Mission {
     public Mission() {
     }
 
-    public Mission(String mis, Date date, String loc, String plan, String veh, String path) {
+    public Mission(String mis, Date date, String loc, String plan, String veh, String path, String type ) {
         this.setMission(mis);
         this.setDate(date);
         this.setLocation(loc);
         this.setPlan(plan);
         this.setVehicle(veh);
         this.setPath(path);
+        this.setType(type);
     }
 
     @Override
@@ -50,6 +52,7 @@ public class Mission {
         json.add("vehicle", vehicle);
         json.add("date", date.toString());
         json.add("path", srcPath);
+        json.add("type", type);
         return json.toString();
     }
 
@@ -91,6 +94,14 @@ public class Mission {
 
     public void setPath(String path) {
         this.srcPath = path;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Date getDate(){
