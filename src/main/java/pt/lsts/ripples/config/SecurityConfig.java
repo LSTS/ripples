@@ -128,7 +128,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     "/plot/**", 
                     "/imc/**", 
                     "/ws/**",
-                    "/coral/**")
+                    "/coral/**",
+                    "/missions/**")
                 .permitAll()
                 .antMatchers("/", "/ripples", "/soirisk", "/messages/text")
                 .permitAll()

@@ -29,6 +29,7 @@
     "leaflet-draw": "^1.0.4",
     "leaflet-fullscreen": "^1.0.2",
     "leaflet-rotatedmarker": "^0.2.0",
+    "leaflet.markercluster": "1.4.1",
     "mobile-detect": "^1.4.4",
     "moment": "^2.27.0",
     "popper.js": "^1.16.1",
@@ -92,6 +93,7 @@
     "tslint-react": "^5.0.0"
   },
   "resolutions": {
-    "react-leaflet-fullscreen-control/react-leaflet": "1.9.1"
+    "react-leaflet-fullscreen-control/react-leaflet": "1.9.1",
+    "leaflet.markercluster/leaflet": "1.7.1"
   }
 }
