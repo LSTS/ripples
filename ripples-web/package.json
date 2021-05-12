@@ -20,7 +20,7 @@
     "@types/reactstrap": "^8.5.0",
     "add": "^2.0.6",
     "bootstrap": "^4.5.0",
-    "chart.js": "^2.9.3",
+    "chart.js": "^2.9.4",
     "eslint": "6.6.0",
     "geolib": "^3.3.1",
     "html-react-parser": "^0.13.0",
