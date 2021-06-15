@@ -244,3 +244,65 @@ path.leaflet-polygon {
   color: white;
   text-decoration: none;
 }
+
+.pollutionDialog {
+  position: absolute;
+  left: 50px;
+  top: 10px;
+  z-index: 9999 !important;
+  color: #004085;
+  background-color: #cce5ff;
+  border: 1px solid;
+  border-radius: .25rem;
+  text-align: center;
+  padding: 0.3em 2em;
+  user-select: none;
+  outline: 0;
+  opacity: 0.9;
+  animation: fadein 500ms;
+  -moz-animation: fadein 500ms;        /* Firefox */
+  -webkit-animation: fadein 500ms;     /* Safari and Chrome */
+}
+
+.pollutionForm {
+  display: grid;
+  width: 200px;
+  margin: 5px;
+}
+
+.pollutionSpan {
+  display: block;
+}
+
+.obstacleForm {
+  display: grid;
+  border: 1px solid;
+  color: #00408A;
+  background: #b6cce3;
+  border-radius: .25rem;
+  margin: 5px;
+}
+
+.pollutionUpdateMarker span {
+  text-align: center;
+  display: block;
+}
+
+.pollutionUpdateMarker label {
+  display: table-cell;
+}
+
+.pollutionUpdateMarker hr {
+  margin-bottom: 0px;
+}
+
+.pollutionForm label {
+  display: flex;
+  margin-top: 4px;
+  margin-bottom: 0px;
+}
+
+#pollutionDescriptionUpdate, #pollutionRadiusUpdate, #pollutionLatitudeUpdate, #pollutionLongitudeUpdate, #pollutionConfigUpdate {
+  width: -webkit-fill-available;
+  margin-bottom: 2px;
+}

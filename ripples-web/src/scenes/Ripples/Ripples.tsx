@@ -8,8 +8,10 @@ import IAsset, { IAssetPayload } from '../../model/IAsset'
 import UserState, { isAdministrator, isCasual, isScientist, IUser, IUserLocation } from '../../model/IAuthState'
 import IGeoLayer from '../../model/IGeoLayer'
 import IMyMap from '../../model/IMyMap'
+import IObstacle from '../../model/IObstacles'
 import IOverlayInfo from '../../model/IOverlayInfo'
 import IPlan, { isPlanEqual } from '../../model/IPlan'
+import IPollution from '../../model/IPollution'
 import IProfile from '../../model/IProfile'
 import IRipplesState from '../../model/IRipplesState'
 import IVehicleParams from '../../model/IVehicleParams'
@@ -40,11 +42,16 @@ import {
   updateSpot,
   updateUserLocation,
   updateVehicle,
+  setPollution,
+  updatePollution,
+  setObstacle,
+  updateObstacle,
 } from '../../redux/ripples.actions'
 import AISService from '../../services/AISUtils'
 import GeoLayerService from '../../services/GeoLayerService'
 import KMLService from '../../services/KMLService'
 import LogbookService from '../../services/LogbookUtils'
+import PollutionService from '../../services/PollutionUtils'
 import SoiService from '../../services/SoiUtils'
 import { getCurrentUser } from '../../services/UserUtils'
 import WSService from '../../services/WebSocketService'
@@ -94,6 +101,10 @@ interface PropsType {
   toggleSliderChange: () => void
   setMapOverlayInfo: (m: string) => void
   setGeoLayers: (layers: IGeoLayer[]) => void
+  setPollution: (_: IPollution[]) => void
+  updatePollution: (p: IPollution) => void
+  setObstacle: (_: IObstacle[]) => void
+  updateObstacle: (o: IObstacle) => void
 }
 
 class Ripples extends Component<PropsType, StateType> {
@@ -105,6 +116,7 @@ class Ripples extends Component<PropsType, StateType> {
   private geoLayerService: GeoLayerService = new GeoLayerService()
   private soiService: SoiService = new SoiService()
   private logbookService: LogbookService = new LogbookService()
+  private pollutionService: PollutionService = new PollutionService()
 
   constructor(props: any) {
     super(props)
@@ -130,6 +142,10 @@ class Ripples extends Component<PropsType, StateType> {
     this.handleWsUserLocation = this.handleWsUserLocation.bind(this)
     this.handleWsVehicleParams = this.handleWsVehicleParams.bind(this)
     this.onSettingsClick = this.onSettingsClick.bind(this)
+    this.updatePollutionData = this.updatePollutionData.bind(this)
+    this.handleWsPollutionUpdate = this.handleWsPollutionUpdate.bind(this)
+    this.updateObstacleData = this.updateObstacleData.bind(this)
+    this.handleWsObstacleUpdate = this.handleWsObstacleUpdate.bind(this)
   }
 
   public async loadCurrentlyLoggedInUser() {
@@ -159,10 +175,14 @@ class Ripples extends Component<PropsType, StateType> {
       this.handleWsAISUpdate,
       this.handleWsAnnotationUpdate,
       this.handleWsUserLocation,
-      this.handleWsVehicleParams
+      this.handleWsVehicleParams,
+      this.handleWsPollutionUpdate,
+      this.handleWsObstacleUpdate
     )
     this.setState({ myMaps })
     this.setState({ loading: false })
+    this.updatePollutionData()
+    this.updateObstacleData()
     this.startUpdates()
   }
 
@@ -219,6 +239,22 @@ class Ripples extends Component<PropsType, StateType> {
       const vehicleCopy = JSON.parse(JSON.stringify(this.props.vehicles[index]))
       vehicleCopy.settings = Object.entries(vehicleParams.params)
       this.props.updateVehicle(vehicleCopy)
+    }
+  }
+
+  public handleWsPollutionUpdate(p: Message) {
+    if (p.body) {
+      const pollutionPayload: IPollution = JSON.parse(p.body)
+      // update redux
+      this.props.updatePollution(pollutionPayload)
+    }
+  }
+
+  public handleWsObstacleUpdate(o: Message) {
+    if (o.body) {
+      const obstaclePayload: IObstacle = JSON.parse(o.body)
+      // update redux
+      this.props.updateObstacle(obstaclePayload)
     }
   }
 
@@ -329,6 +365,18 @@ class Ripples extends Component<PropsType, StateType> {
     this.props.setAis(shipsData)
   }
 
+  public async updatePollutionData() {
+    const pollutionData: IPollution[] = await this.pollutionService.fetchPollutionData()
+    // update redux store
+    this.props.setPollution(pollutionData)
+  }
+
+  public async updateObstacleData() {
+    const obstacleData: IObstacle[] = await this.pollutionService.fetchObstaclesData()
+    // update redux store
+    this.props.setObstacle(obstacleData)
+  }
+
   public handleEditPlan = (p: IPlan) => {
     this.props.editPlan(p)
     this.stopUpdates()
@@ -425,6 +473,8 @@ class Ripples extends Component<PropsType, StateType> {
             myMaps={this.state.myMaps}
             geoServerAddr={this.state.geoServerAddr}
             onSettingsClick={this.onSettingsClick}
+            setPollutionMarkers={this.updatePollutionData}
+            setObstacles={this.updateObstacleData}
           />
           <SidePanel onSettingsClick={this.onSettingsClick} />
           <Slider onChange={this.onSliderChange} min={-48} max={48} value={this.props.sliderValue} />
@@ -474,6 +524,10 @@ const actionCreators = {
   toggleSliderChange,
   toggleVehicleModal,
   setGeoLayers,
+  setPollution,
+  updatePollution,
+  setObstacle,
+  updateObstacle,
 }
 
 export default connect(mapStateToProps, actionCreators)(Ripples)

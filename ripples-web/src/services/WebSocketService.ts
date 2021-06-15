@@ -24,7 +24,9 @@ export default class WSService {
     aisHandler: (m: Message) => any,
     annotationHandler: (m: Message) => any,
     userLocationHandler: (m: Message) => any,
-    vehicleParamsHandler: (m: Message) => any
+    vehicleParamsHandler: (m: Message) => any,
+    pollutionHandler: (m: Message) => any,
+    obstacleHandler: (m: Message) => any
   ) {
     this.client.onConnect = (frame) => {
       // Do something, all subscribes must be done is this callback
@@ -34,6 +36,8 @@ export default class WSService {
       this.client.subscribe('/topic/logbook', annotationHandler)
       this.client.subscribe('/topic/users/location', userLocationHandler)
       this.client.subscribe('/topic/assets/params', vehicleParamsHandler)
+      this.client.subscribe('/topic/pollution', pollutionHandler)
+      this.client.subscribe('/topic/obstacle', obstacleHandler)
     }
   }
 

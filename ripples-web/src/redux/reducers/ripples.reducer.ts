@@ -3,8 +3,10 @@ import IAisShip from '../../model/IAisShip'
 import IAsset from '../../model/IAsset'
 import { isUserEqual, IUserLocation, noAuth } from '../../model/IAuthState'
 import ILatLng from '../../model/ILatLng'
+import IObstacle from '../../model/IObstacles'
 import { DefaultOverlayInfo } from '../../model/IOverlayInfo'
 import IPlan, { EmptyPlan, isPlanEqual } from '../../model/IPlan'
+import IPollution from '../../model/IPollution'
 import IRipplesState, { defaultAssetsGroup } from '../../model/IRipplesState'
 import { ToolSelected } from '../../model/ToolSelected'
 import PositionService from '../../services/PositionUtils'
@@ -60,6 +62,10 @@ import {
   updateWp,
   updateWpLocation,
   updateWpTimestamp,
+  setPollution,
+  updatePollution,
+  setObstacle,
+  updateObstacle,
 } from '../ripples.actions'
 
 const positionService: PositionService = new PositionService()
@@ -93,6 +99,8 @@ const startState: IRipplesState = {
   geoLayers: null,
   isEditingPlan: false,
   updatingPlanId: false,
+  pollution: [],
+  obstacle: [],
 }
 
 const ripplesReducer = createReducer(startState, {
@@ -405,6 +413,30 @@ const ripplesReducer = createReducer(startState, {
   },
   [setUpdatingPlanId.type]: (state, action) => {
     state.updatingPlanId = action.payload
+  },
+  [setPollution.type]: (state, action) => {
+    state.pollution = action.payload
+  },
+  [updatePollution.type]: (state, action) => {
+    const newPollution: IPollution = action.payload
+
+    const oldPollution = state.pollution.find((p) => p.id === newPollution.id)
+    if (oldPollution) {
+      oldPollution.description = newPollution.description
+      oldPollution.radius = newPollution.radius
+      oldPollution.latitude = newPollution.latitude
+      oldPollution.longitude = newPollution.longitude
+      oldPollution.status = newPollution.status
+    } else {
+      state.pollution.push(newPollution)
+    }
+  },
+  [setObstacle.type]: (state, action) => {
+    state.obstacle = action.payload
+  },
+  [updateObstacle.type]: (state, action) => {
+    const newObstacle: IObstacle = action.payload
+    state.obstacle.push(newObstacle)
   },
 })
 
